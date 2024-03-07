@@ -10,7 +10,7 @@ async function connectToDatabase() {
     try {
         // Connect to the MongoDB cluster
         await client.connect();
-       // console.log('Connected to MongoDB Atlas');
+      
 
         // Access a specific database
         
