@@ -24,8 +24,9 @@ module.exports = {
             const database= await connectToDatabase(); 
             const products = await database.collection(collection.PRODUCT_COLLECTION).find().toArray();
             
-            console.log('readed:', products);
-            res.render('admin/view-products', { products, admin: true });
+            //console.log('readed:', products);
+            //res.render('admin/view-products', { products});
+            return products;
         } catch (error) {
             console.error('Error sending product:', error);
            

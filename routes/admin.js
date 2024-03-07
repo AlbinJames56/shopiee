@@ -5,7 +5,13 @@ var productHelpers=require('../helpers/product-helpers')
 
 /* GET users listing. */
 router.get('/', async (req, res) => {
-  await productHelpers.getAllProducts(req, res);
+  try {
+    const products = await productHelpers.getAllProducts();
+    res.render('admin/view-products', { products, admin: true });
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 router.get('/add-products',(req,res)=>{
   res.render("admin/add-products");
