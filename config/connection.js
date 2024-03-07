@@ -13,9 +13,10 @@ async function connectToDatabase() {
        // console.log('Connected to MongoDB Atlas');
 
         // Access a specific database
-        //const database = client.db('shopiee'); // Replace '<dbname>' with your actual database name
         
-        return client;
+        const database = client.db("shopiee"); // Replace '<dbname>' with your actual database name
+        
+        return database;
     } catch (error) {
         console.error('Error connecting to MongoDB Atlas', error);
         throw error;
