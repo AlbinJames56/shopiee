@@ -34,5 +34,17 @@ router.post('/add-product', (req, res) => {
       }
   });
 });
+router.get('/delete-product/:id',(req,res)=>{
+  let prodId=req.params.id;
+  if (prodId.length !== 24) {
+    return res.status(400).send('Invalid product ID');
+}
+productHelpers.deleteProduct(prodId).then((response) => {
+    res.redirect('/admin/');
+}).catch((error) => {
+    console.error('Error deleting product:', error);
+    res.redirect('/admin/');
+});
+})
  
 module.exports = router;

@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const db = require('../config/connection');
+//const db = require('../config/connection');
 // MongoDB connection URI
 const uri = 'mongodb://localhost:27017';
 
@@ -14,9 +14,9 @@ async function connectToDatabase() {
 
         // Access a specific database
         
-        const database = client.db("shopiee"); // Replace '<dbname>' with your actual database name
+        const db = client.db("shopiee"); // Replace '<dbname>' with your actual database name
         
-        return database;
+        return db;
     } catch (error) {
         console.error('Error connecting to MongoDB Atlas', error);
         throw error;

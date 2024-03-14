@@ -1,6 +1,7 @@
 const {db} = require('../config/connection');
 const { connectToDatabase } = require('../config/connection');
 var collection=require('../config/collections')
+var ObjectId=require('mongodb').ObjectId;
 
 module.exports = {
     addProduct: async (product, callback) => {
@@ -31,5 +32,18 @@ module.exports = {
             console.error('Error sending product:', error);
            
         }
+    },
+    deleteProduct: (prodId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const database = await connectToDatabase();
+                const response = await database.collection(collection.PRODUCT_COLLECTION).deleteOne({ _id: new ObjectId(prodId) });
+                console.log(response);
+                resolve(response);
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                reject(error);
+            }
+        });
     }
 };
