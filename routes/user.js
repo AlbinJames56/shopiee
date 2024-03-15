@@ -16,7 +16,7 @@ router.get('/', async (req, res,next) => {
       let user=req.session.user;
       const products = await productHelpers.getAllProducts();
       res.render('user/view-products', { products,user});
-      console.log(user);
+      // console.log(user);
     } catch (error) {
       console.error('Error fetching products:', error);
       res.status(500).send('Internal Server Error');
@@ -60,8 +60,10 @@ router.post('/login',(req,res)=>{
     }else{
       try {
       const insertedId = await userHelpers.doSignup(newUser);
-      console.log('Inserted user ID:', insertedId);
-      res.redirect('/login'); // Redirect to login page after successful signup
+      // console.log('Inserted user ID:', insertedId);
+      req.session.loggedIn=true;
+      req.session.user=response;
+      res.redirect('/ '); // Redirect to login page after successful signup
       } catch (error) {
       console.error('Error signing up user:', error);
       res.status(500).send('Internal Server Error');
@@ -72,8 +74,24 @@ router.get('/logout',(req,res)=>{
   req.session.destroy();
   res.redirect('/');
 })
-router.get('/cart',verifyLogin,(req,res)=>{
-  res.render("user/cart");
+router.get('/cart',verifyLogin,async (req,res)=>{
+  try {
+    let products = await userHelpers.getCartProducts(req.session.user._id);
+    console.log("cart", products);
+    res.render("user/cart", { products }); // Pass products to the view
+} catch (error) {
+    console.error('Error fetching cart products:', error);
+    res.status(500).send('Internal Server Error');
+}
 })     
+//carT
+router.get('/add-to-cart/:id',verifyLogin,async(req,res)=>{
+  try{
+  await userHelpers.addToCart(req.params.id,req.session.user._id).then(()=>{
+    res.redirect('/')
+  })
+  }catch(err){console.log(err)}
+})
+
  
 module.exports = router;
