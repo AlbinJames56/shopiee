@@ -92,12 +92,12 @@ router.get("/cart", verifyLogin, async (req, res) => {
 });
 //carT
 router.get("/add-to-cart/:id", async (req, res) => {
-  console.log('api call');
+
   try {
     await userHelpers
       .addToCart(req.params.id, req.session.user._id)
       res.json({ status: true });
-      console.log(res.json);
+      
   } catch (err) {
     console.log(err);
   }
