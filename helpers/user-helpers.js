@@ -52,11 +52,11 @@ module.exports = {
     },
     addToCart: async (proId, userId) => {
         try {
-          console.log('Adding product to cart...');
+         
           const database = await connectToDatabase();
-          console.log('Connected to database');
+          
           const userCart = await database.collection(collection.CART_COLLECTION).findOne({ user: new ObjectId(userId) });
-          console.log('User cart:', userCart);
+         // console.log('User cart:', userCart);
           if (userCart) {
             // Logic for adding product to existing cart
 
@@ -64,7 +64,7 @@ module.exports = {
                 { user: new ObjectId(userId) },
                 { $push: { product: new ObjectId(proId) } }
             )
-            console.log('Product added to existing cart');
+            //console.log('Product added to existing cart');
           } else {
             // Create a new cart for the user
             let cartObj = {
@@ -73,7 +73,7 @@ module.exports = {
             };
             console.log('New cart object:', cartObj);
             await database.collection(collection.CART_COLLECTION).insertOne(cartObj);
-            console.log('Cart inserted successfully');
+           // console.log('Cart inserted successfully');
           }
         } catch (error) {
           console.error("Error adding product to cart:", error);
@@ -109,6 +109,25 @@ module.exports = {
             console.error("Error showing the cart:", err);
           throw err ;
         }
+    },
+    getCartCount:async (userId)=>{
+
+     try {
+            
+        const database= await db.connectToDatabase(); 
+        let count= null;
+        let cart = await database.collection(collection.CART_COLLECTION).findOne({user:new ObjectId(userId)});
+        
+        if(cart){
+            count=cart.product.length;
+           
+        }
+    return count;
+    } catch (error) {
+        console.error('Error finding user:', error);
+       
     }
+   
+}
 
 };
