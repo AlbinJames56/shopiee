@@ -65,7 +65,7 @@ module.exports = {
             let prodExist=userCart.product.findIndex(product=>product.item==prodId)
             console.log(prodExist);
             if(prodExist!=-1){
-                await database.collection(collection.CART_COLLECTION).updateOne({user:new ObjectId(cartId),'product.item':new ObjectId(prodId)},
+                await database.collection(collection.CART_COLLECTION).updateOne({user:new ObjectId(userId),'product.item':new ObjectId(prodId)},
                 {
                     $inc:{'product.$.quantity':1}
                 }) 
@@ -177,6 +177,21 @@ changeProductQuantity:async (details)=>{
            
         
 catch(err){
+        console.error('Error updating quantity:', err ); 
+        throw err;
+    }
+},
+removeProduct:async (details)=>{
+    try{
+        const database= await db.connectToDatabase(); 
+        await database.collection(collection.CART_COLLECTION)
+        .updateOne({_id:new ObjectId(details.cart)},
+        {
+            $pull:{product:{item:new ObjectId(details.product)}}
+        })
+        return ({removeProduct:true});
+
+    }catch (err){
         console.error('Error updating quantity:', err ); 
         throw err;
     }

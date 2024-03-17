@@ -5,6 +5,7 @@
                 <tr>
                     <th scope="col">Item</th>
                     <th scope="col">Title</th>
+                    <th scope="col">Price</th>
                     <th scope="col">Quantity</th>
                 </tr>
             </thead>
@@ -14,6 +15,7 @@
                
                 <td><img src="/product-images/{{this.product._id}}.jpg" style="width :70px; height:auto;" alt="">
                 <td>{{this.product.name}}</td>
+                <td>{{this.product.price}}</td>
                   
                   <td>
                     <button type="button" class="cart-item-count mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',-1)">-</button>
@@ -21,7 +23,7 @@
                     <button type="button" class="cart-item-count" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',1)">+</button>
                 </td>
                 <td>
-                    <a href="" class="btn btn-danger">Remove</a>
+                    <button onclick="removeItem('{{this._id}}','{{this.product._id}}')" class="btn btn-danger">Remove</button>
                 </td>
 
                 </td>
@@ -58,5 +60,26 @@
         // Handle error if needed
       },
     });
+  }
+  function removeItem(cartId,prodId){
+    $.ajax({
+      url: "/remove-product/",
+      data: {
+        cart: cartId,
+        product: prodId
+      },
+      method: "POST",
+      success: (response) => {
+        
+          alert("Product removed from cart");
+          location.reload();
+        
+      },
+      error: function (xhr, status, error) {
+        console.error("Error:", error);
+        // Handle error if needed
+      },
+    });
+  
   }
 </script>
