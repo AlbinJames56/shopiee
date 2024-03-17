@@ -1,0 +1,61 @@
+<section>
+  <div class="container pt-5 ">
+    <h2 class="text-center">Enter Delivery Details</h2>
+    <form action="" id="checkout-form"> 
+    <div class="row p-5">
+    <div class="col-md-7">
+      
+      
+        <label for="name">Name: </label><br />
+        <input type="text" style="width:  60%;" id="name" name="name" /><br /> 
+
+        <label for="address ">Address : </label><br />
+        <input type="text"style="width:  60%;" name="address" id="address" /><br>
+
+        <label for="pincode">Pincode: </label><br />
+        <input type="number" style="width:  60%;" name="pincode" id="pincode" /><br />
+        <label for="mobile">Mobile: </label><br />
+        <input type="number" style="width:  60%;" name="mobile" id="mobile" /><br /><br />
+
+        
+
+    </div>
+    <div class="col-md-4 ">
+      <div class="card p-4 ">
+        <h4>Total Amount: Rs.{{total}}</h4>
+        <hr />
+        <h6>Payment method</h6>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="cod"
+            id="cod"
+          />
+          <label class="form-check-label" for="cod">
+            COD
+          </label>
+        </div>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="online"
+            id="online"
+            checked
+          />
+          <label class="form-check-label" for="online">
+            Online Payment
+      </div><br>
+      <button onclick="validateForm()" class="btn btn-success">checkout</button>
+      
+    </div>
+  </div>
+        </form>
+</div>
+</section>
+<script>
+    $("#checkout-form").submut((e)=>{
+        e.preventDefault()
+    })
+</script>

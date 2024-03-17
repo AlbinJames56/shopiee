@@ -83,7 +83,8 @@ router.get("/cart", verifyLogin, async (req, res) => {
   try {
     let products = await userHelpers.getCartProducts(req.session.user._id);
     //console.log("cart", products);
-    res.render("user/cart", { products, user: req.session.user }); // Pass products to the view
+    let total=await userHelpers.getTotalAmount(req.session.user._id)
+    res.render("user/cart", { products, user: req.session.user._id,total}); // Pass products to the view
   } catch (error) {
     console.error("Error fetching cart products:", error);
     res.status(500).send("Internal Server Error");
@@ -98,16 +99,20 @@ router.get("/add-to-cart/:id", async (req, res) => {
     console.log(err);
   }
 });
-router.post("/change-product-quantity", (req, res, next) => {
+router.post("/change-product-quantity",  (req, res, next) => {
   // console.log(req.body);
-  userHelpers.changeProductQuantity(req.body).then((response) => {
+  userHelpers.changeProductQuantity(req.body).then(async(response) => {
+    response.total=await userHelpers.getTotalAmount(req.body.user)
     res.json(response);
   });
 });
-router.post('/remove-product',(req,res,next)=>{
-  userHelpers.removeProduct(req.body).then((response)=>{
-    res.json(response)
-  })
-})
-
+router.post("/remove-product", (req, res, next) => {
+  userHelpers.removeProduct(req.body).then((response) => {
+    res.json(response);
+  });
+}); 
+router.get('/place-order',verifyLogin,async (req, res) => {
+  let total=await userHelpers.getTotalAmount(req.session.user._id)
+  res.render("user/place-order",{total,user:req.session.user});  
+});
 module.exports = router;

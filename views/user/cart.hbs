@@ -1,6 +1,6 @@
 <section>
-    <div class="conatiner">
-        <table class="table mt-5">
+    <div class="conatiner" style="margin-left: 5rem;">
+        <table class="table mt-5 " >
             <thead>
                 <tr>
                     <th scope="col">Item</th>
@@ -18,9 +18,9 @@
                 <td>{{this.product.price}}</td>
                   
                   <td>
-                    <button type="button" class="cart-item-count mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',-1)">-</button>
+                    <button type="button" class="cart-item-count mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user}}',-1)">-</button>
                     <span id="{{this.product._id}}">{{this.quantity}}</span>
-                    <button type="button" class="cart-item-count" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',1)">+</button>
+                    <button type="button" class="cart-item-count" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user}}',1)">+</button>
                 </td>
                 <td>
                     <button onclick="removeItem('{{this._id}}','{{this.product._id}}')" class="btn btn-danger">Remove</button>
@@ -32,15 +32,23 @@
             {{/each}}
             </tbody>
         </table>
+        
+        <hr>
+        <div style="margin-left: 10rem;">
+        <h4 class="mt-4  " style="float: right;margin-right:10rem;">Total Rs:<span id="total">{{total}}</span></h4>
+        <a href="/place-order" style="float:right; margin-right:10rem;width:100%" class="btn btn-success">Place Order</a>
+    </div>
     </div>
 </section>
+
 <script >
-   function changeQuantity(cartId, prodId, count) {
+   function changeQuantity(cartId, prodId, userId,count) {
     let quantity = parseInt(document.getElementById(prodId).innerHTML);
     count = parseInt(count);
     $.ajax({
       url: "/change-product-quantity/",
       data: {
+        user:userId,
         cart: cartId,
         product: prodId,
         count: count,
@@ -52,7 +60,10 @@
           alert("Product removed from cart");
           location.reload();
         } else {
+
           document.getElementById(prodId).innerHTML = quantity + count;
+          document.getElementById('total').innerHTML=response.total;
+
         }
       },
       error: function (xhr, status, error) {
