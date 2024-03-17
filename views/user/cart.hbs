@@ -11,12 +11,14 @@
             <tbody>
                 {{#each products}}
             <tr>
-                {{#each this.product}}
-                <td><img src="/product-images/{{this._id}}.jpg" style="width :70px; height:auto;" alt="">
-                <td>{{this.name}}</td>
-                  {{/each}}
+               
+                <td><img src="/product-images/{{this.product._id}}.jpg" style="width :70px; height:auto;" alt="">
+                <td>{{this.product.name}}</td>
+                  
                   <td>
-                    <button class="cart-item-count mr-3">-</button>{{this.quantity}}<button class="cart-item-count">+</button>
+                    <button type="button" class="cart-item-count mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',-1)">-</button>
+                    <span id="{{this.product._id}}">{{this.quantity}}</span>
+                    <button type="button" class="cart-item-count" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',1)">+</button>
                 </td>
                 <td>
                     <a href="" class="btn btn-danger">Remove</a>
@@ -30,3 +32,31 @@
         </table>
     </div>
 </section>
+<script >
+   function changeQuantity(cartId, prodId, count) {
+    let quantity = parseInt(document.getElementById(prodId).innerHTML);
+    count = parseInt(count);
+    $.ajax({
+      url: "/change-product-quantity/",
+      data: {
+        cart: cartId,
+        product: prodId,
+        count: count,
+        quantity: quantity,
+      },
+      method: "POST",
+      success: (response) => {
+        if (response.removeProduct) {
+          alert("Product removed from cart");
+          location.reload();
+        } else {
+          document.getElementById(prodId).innerHTML = quantity + count;
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error("Error:", error);
+        // Handle error if needed
+      },
+    });
+  }
+</script>

@@ -14,14 +14,13 @@ const verifyLogin = (req, res, next) => {
 router.get("/", async (req, res, next) => {
   try {
     let user = req.session.user;
-    let cartCount=null
-    if (req.session.user){
-    cartCount=await userHelpers.getCartCount(req.session.user._id)
+    let cartCount = null;
+    if (req.session.user) {
+      cartCount = await userHelpers.getCartCount(req.session.user._id);
     }
     const products = await productHelpers.getAllProducts();
-    res.render("user/view-products", { products, user,cartCount });
+    res.render("user/view-products", { products, user, cartCount });
     // console.log(user);
-
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).send("Internal Server Error");
@@ -83,7 +82,7 @@ router.get("/logout", (req, res) => {
 router.get("/cart", verifyLogin, async (req, res) => {
   try {
     let products = await userHelpers.getCartProducts(req.session.user._id);
-    console.log("cart", products);
+    //console.log("cart", products);
     res.render("user/cart", { products, user: req.session.user }); // Pass products to the view
   } catch (error) {
     console.error("Error fetching cart products:", error);
@@ -92,15 +91,18 @@ router.get("/cart", verifyLogin, async (req, res) => {
 });
 //carT
 router.get("/add-to-cart/:id", async (req, res) => {
-
   try {
-    await userHelpers
-      .addToCart(req.params.id, req.session.user._id)
-      res.json({ status: true });
-      
+    await userHelpers.addToCart(req.params.id, req.session.user._id);
+    res.json({ status: true });
   } catch (err) {
     console.log(err);
   }
+});
+router.post("/change-product-quantity", (req, res, next) => {
+  // console.log(req.body);
+  userHelpers.changeProductQuantity(req.body).then((response) => {
+    res.json(response);
+  });
 });
 
 module.exports = router;

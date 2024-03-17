@@ -65,7 +65,7 @@ module.exports = {
             let prodExist=userCart.product.findIndex(product=>product.item==prodId)
             console.log(prodExist);
             if(prodExist!=-1){
-                await database.collection(collection.CART_COLLECTION).updateOne({'product.item':new ObjectId(prodId)},
+                await database.collection(collection.CART_COLLECTION).updateOne({user:new ObjectId(cartId),'product.item':new ObjectId(prodId)},
                 {
                     $inc:{'product.$.quantity':1}
                 }) 
@@ -114,7 +114,15 @@ module.exports = {
                         foreignField: '_id',
                         as:'product'
                     }
+                },
+                {
+                    $project:{
+                        item:1,
+                        quantity:1,
+                        product:{$arrayElemAt:['$product',0]}
+                    }
                 }
+
             ]).toArray() 
             // console.log(cartItems[0].product );
             return cartItems ;
@@ -137,10 +145,41 @@ module.exports = {
         }
     return count;
     } catch (error) {
-        console.error('Error finding user:', error);
+        console.error('Error finding user:', error);  
        
     }
    
+},
+changeProductQuantity:async (details)=>{
+    try{
+        details.count=parseInt(details.count)
+        details.quantity=parseInt(details.quantity)
+        if(details.count==-1&&details.quantity==1){
+             const database= await db.connectToDatabase(); 
+        await database.collection(collection.CART_COLLECTION)
+        .updateOne({_id:new ObjectId(details.cart)},
+        {
+            $pull:{product:{item:new ObjectId(details.product)}}
+        })
+        return ({removeProduct:true});
+}else{
+    const database= await db.connectToDatabase(); 
+        await database.collection(collection.CART_COLLECTION)
+        .updateOne({_id:new ObjectId(details.cart),'product.item':new ObjectId(details.product)},
+        {
+            $inc:{'product.$.quantity':details.count}
+        })
+        return true;
 }
-
+        }
+       
+            
+           
+        
+catch(err){
+        console.error('Error updating quantity:', err ); 
+        throw err;
+    }
+}
+   
 };
