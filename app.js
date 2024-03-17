@@ -5,9 +5,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var hbs = require('express-handlebars');
 var fileUpload=require("express-fileupload");
-var session=require('express-session')
+//var session=require('express-session')
 
-
+const sessionMiddleware = require("./config/session");
 var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
 
@@ -28,7 +28,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
-app.use(session({secret:'Key', resave: false,saveUninitialized: false,cookie:{maxAge:600000}})) //defining cookie and session
+app.use(sessionMiddleware);
+//app.use(session({secret:'Key', resave: false,saveUninitialized: false,cookie:{maxAge:600000}})) //defining cookie and session
 
 
 // app.js

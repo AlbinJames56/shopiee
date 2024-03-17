@@ -1,7 +1,7 @@
 <section>
   <div class="container pt-5 ">
     <h2 class="text-center">Enter Delivery Details</h2>
-    <form action="" id="checkout-form"> 
+    <form action="place-order" method="post" id="checkout-form"> 
     <div class="row p-5">
     <div class="col-md-7">
       
@@ -16,7 +16,7 @@
         <input type="number" style="width:  60%;" name="pincode" id="pincode" /><br />
         <label for="mobile">Mobile: </label><br />
         <input type="number" style="width:  60%;" name="mobile" id="mobile" /><br /><br />
-
+        <input type="text" name="userId" id="" value="{{user._id}}" hidden/>
         
 
     </div>
@@ -29,8 +29,8 @@
           <input
             class="form-check-input"
             type="radio"
-            name="cod"
-            id="cod"
+            name="payment-method"
+            value="cod"
           />
           <label class="form-check-label" for="cod">
             COD
@@ -40,8 +40,8 @@
           <input
             class="form-check-input"
             type="radio"
-            name="online"
-            id="online"
+            name="payment-method"
+            value="online"
             checked
           />
           <label class="form-check-label" for="online">
@@ -57,5 +57,13 @@
 <script>
     $("#checkout-form").submut((e)=>{
         e.preventDefault()
+        $:ajax({
+            url:'/place-order',
+            method:'post',
+            data:$('#checkout-form').serialize(),
+            success:(res) => {
+                alert(res)
+            }
+        })
     })
 </script>

@@ -251,12 +251,56 @@ module.exports = {
                 },
             ])
             .toArray();
-        console.log(total);
+       // console.log(total);
         return (total[0].total);
     } catch (err) {
         console.error("Error showing the cart:", err);
         throw err;
     }
 },
+placeOrder:async (order,products,total)=>{
+    try {
+        console.log(order,products,total)
+        let status=order['payment-method']==='COD'?'placed':'pending'; //checking condition to cod or online payment
+        let orderObj={
+            deliveryDetails:{
+                name:order.name,
+                mobile:order.mobile,
+                address:order.address,
+                pincode:order.pincode,
+        },
+        userId:new ObjectId(order.userId),
+        paymentMethod:order['payment-method'],
+        products:products,
+        totalAmount:total,
+        date: new date(),
+        status:status
+      }
+      const database = await db.connectToDatabase();
+      let cart=await database.collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{
+        database.collection(collection.CART_COLLECTION).deleteOne({user:new ObjectId(order.userId)}
+        )
+        return
+        //resolve()
+      })
+ 
+     } catch (err) {
+        console.error("Error updating quantity:", err);
+        throw err;
+      }
+},
+getCartProductList:async (userId)=>{
+    try {
+        return new Promise(async (resolve,reject)=>{
+        const database = await db.connectToDatabase();
+        let cart=await database.collection(collection.CART_COLLECTION).findOne(
+          {user: new ObjectId(userId) });
+          resolve(cart.product)
+         })
+      } catch (err) {
+        console.error("Error updating quantity:", err);
+        throw err;
+      }
+}
 
 };

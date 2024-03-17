@@ -25,7 +25,7 @@ router.get("/", async (req, res, next) => {
     console.error("Error fetching products:", error);
     res.status(500).send("Internal Server Error");
   }
-});
+}); 
 router.get("/login", (req, res) => {
   if (req.session.loggedIn) {
     res.redirect("/");
@@ -115,4 +115,12 @@ router.get('/place-order',verifyLogin,async (req, res) => {
   let total=await userHelpers.getTotalAmount(req.session.user._id)
   res.render("user/place-order",{total,user:req.session.user});  
 });
+router.post('/place-order',async (req,res)=>{
+  let products=await userHelpers.getCartProductList(req.body.userId)
+  let totalPrice=await userHelpers.getTotalAmount(req.body.userId)
+  userHelpers.placeOrder(req.body,products,totalPrice).then((response)=>{
+    res.json({status:true})
+  })
+  console.log(req.body);
+})
 module.exports = router;
