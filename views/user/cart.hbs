@@ -1,5 +1,6 @@
 <section>
     <div class="conatiner" style="margin-left: 5rem;">
+       {{#if products.length}}
         <table class="table mt-5 " >
             <thead>
                 <tr>
@@ -10,13 +11,11 @@
                 </tr>
             </thead>
             <tbody>
-                {{#each products}} 
+                {{#each products}}
             <tr>
-               
                 <td><img src="/product-images/{{this.product._id}}.jpg" style="width :70px; height:auto;" alt="">
                 <td>{{this.product.name}}</td>
                 <td>{{this.product.price}}</td>
-                  
                   <td>
                     <button type="button" class="cart-item-count mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user}}',-1)">-</button>
                     <span id="{{this.product._id}}">{{this.quantity}}</span>
@@ -25,20 +24,24 @@
                 <td>
                     <button onclick="removeItem('{{this._id}}','{{this.product._id}}')" class="btn btn-danger">Remove</button>
                 </td>
-
                 </td>
-              
             </tr>
             {{/each}}
             </tbody>
         </table>
-        
         <hr>
         <div style="margin-left: 10rem;">
         <h4 class="mt-4  " style="float: right;margin-right:10rem;">Total Rs:<span id="total">{{total}}</span></h4>
         <a href="/place-order" style="float:right; margin-right:10rem;width:100%" class="btn btn-success">Place Order</a>
     </div>
     </div>
+    {{else}}
+             <div class="text-center pt-5">
+                <h3 >Cart is empty<br>Please add some items to your cart.</h3>
+                <a href="/" class="btn btn-success">Add products</a>
+             </div>
+                       
+                {{/if}}
 </section>
 
 <script >

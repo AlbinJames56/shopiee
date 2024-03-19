@@ -6,15 +6,16 @@
     <div class="col-md-7">
       
       
-        <label for="name">Name: </label><br />
-        <input type="text" style="width:  60%;" id="name" name="name" /><br /> 
+        <label for="name" id="name-label" >Name: </label><br />
+        
+        <input type="text" style="width:  60%;" id="name" name="name"   /><br /> 
 
-        <label for="address ">Address : </label><br />
+        <label for="address" id="address-label">Address : </label><br />
         <input type="text"style="width:  60%;" name="address" id="address" /><br>
 
-        <label for="pincode">Pincode: </label><br />
+        <label for="pincode" id="pincode-label">Pincode: </label><br />
         <input type="number" style="width:  60%;" name="pincode" id="pincode" /><br />
-        <label for="mobile">Mobile: </label><br />
+        <label for="mobile" id="mobile-label">Mobile: </label><br />
         <input type="number" style="width:  60%;" name="mobile" id="mobile" /><br /><br />
         <input type="text" name="userId" id="" value="{{user._id}}" hidden/>
         
@@ -51,6 +52,7 @@
       
     </div>
   </div>
+  <div id="error-message"></div>
         </form>
 </div>
 </section>
@@ -67,10 +69,27 @@
         
 
         if (!name || !address || !pincode || !mobile ) {
-            $("#error-message").text("Please fill out all fields").show();
+          const errorMessage = "Please fill out all fields";
+            $("#error-message").text(errorMessage).show().css("color", "red");
+
+           if (!name) {
+                $("#name").css("border", "1px solid red");
+                $("#name-label").css("color", "red");
+            }
+            if (!address) {
+                $("#address").css("border", "1px solid red");
+                $("#address-label").css("color", "red");
+            }
+            if (!pincode) {
+                $("#pincode").css("border", "1px solid red");
+                $("#pincode-label").css("color", "red");
+            }
+            if (!mobile) {
+                $("#mobile").css("border", "1px solid red");
+                $("#mobile-label").css("color", "red");
+            }
             return;
         }
-
         $.ajax({
             url: '/place-order',
             method: 'post',

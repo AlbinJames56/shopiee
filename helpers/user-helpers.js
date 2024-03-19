@@ -252,7 +252,12 @@ module.exports = {
             ])
             .toArray();
        // console.log(total);
+       if (total.length > 0){
         return (total[0].total);
+       }else{
+        return 0;
+       } 
+        
     } catch (err) {
         console.error("Error showing the cart:", err);
         throw err;
@@ -261,7 +266,7 @@ module.exports = {
 placeOrder:async (order,products,total)=>{
     try {
         console.log(order,products,total)
-        let status=order['payment-method']==='COD'?'placed':'pending'; //checking condition to cod or online payment
+        let status=order['payment-method']==='COD'?'placed':'success'; //checking condition to cod or online payment
         let orderObj={
             deliveryDetails:{
                 name:order.name,
@@ -278,8 +283,8 @@ placeOrder:async (order,products,total)=>{
       }
       const database = await db.connectToDatabase();
       let cart=await database.collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{
-        // database.collection(collection.CART_COLLECTION).deleteOne({user:new ObjectId(order.userId)}
-        // )
+        database.collection(collection.CART_COLLECTION).deleteOne({user:new ObjectId(order.userId)}
+        )
         return
         //resolve()
       })
