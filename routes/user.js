@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 var productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
+const { log } = require("handlebars");
 
 const verifyLogin = (req, res, next) => {
   if (req.session.loggedIn) {
@@ -118,10 +119,16 @@ router.get('/place-order',verifyLogin,async (req, res) => {
 router.post('/place-order',async (req,res)=>{
   let products=await userHelpers.getCartProductList(req.body.userId)
   let totalPrice=await userHelpers.getTotalAmount(req.body.userId)
-  userHelpers.placeOrder(req.body,products,totalPrice).then((response)=>{
-    res.json({status:true})
-    res.render('user/order-success')
-  })
+  userHelpers.placeOrder(req.body,products,totalPrice).then((orderId)=>{
+    if(req.body['payment-method']=='COD'){
+      res.json({status:true});
+    }else{
+      // console.log("o id:",orderId);
+      userHelpers.generateRazorpay(orderId,totalPrice).then((response)=>{
+        res.json(response)
+      })
+    }
+  }) 
   //console.log(req.body);
 }) 
 router.get('/order-success',(req,res)=>{

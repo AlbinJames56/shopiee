@@ -4,6 +4,12 @@ var collection = require("../config/collections");
 const bcrypt = require("bcrypt");
 const { log } = require("handlebars");
 var { ObjectId } = require("mongodb");
+const Razorpay = require("razorpay");
+
+var instance = new Razorpay({
+  key_id: "rzp_test_QRxsVv0c0u81qM",
+  key_secret: "oH6W8oBNSpxq0dzUFV80qF78",
+});
 
 module.exports = {
   doSignup: async (userData) => {
@@ -45,7 +51,7 @@ module.exports = {
       console.error("Error finding user:", error);
     }
   },
-  addToCart: async (prodId, userId) => {
+  addToCart: async (prodId, userId, res) => {
     try {
       const database = await connectToDatabase();
       let prodObj = {
@@ -61,7 +67,7 @@ module.exports = {
         let prodExist = userCart.product.findIndex(
           (product) => product.item == prodId
         );
-        console.log(prodExist);
+        //console.log(prodExist);
         if (prodExist != -1) {
           await database.collection(collection.CART_COLLECTION).updateOne(
             {
@@ -72,7 +78,8 @@ module.exports = {
               $inc: { "product.$.quantity": 1 },
             }
           );
-          console.log("Product quantity updated in cart");
+          //console.log("Product quantity updated in cart");
+          
         } else {
           await database
             .collection(collection.CART_COLLECTION)
@@ -80,7 +87,9 @@ module.exports = {
               { user: new ObjectId(userId) },
               { $push: { product: prodObj } }
             );
-          console.log("Product added to existing cart");
+
+          //console.log("Product added to existing cart");
+        
         }
       } else {
         // Create a new cart for the user
@@ -93,6 +102,7 @@ module.exports = {
           .collection(collection.CART_COLLECTION)
           .insertOne(cartObj);
         // console.log('Cart inserted successfully');
+        
       }
     } catch (error) {
       console.error("Error adding product to cart:", error);
@@ -181,7 +191,7 @@ module.exports = {
             $inc: { "product.$.quantity": details.count },
           }
         );
-        return ( {status:true});
+        return { status: true };
       }
     } catch (err) {
       console.error("Error updating quantity:", err);
@@ -205,166 +215,189 @@ module.exports = {
   },
   getTotalAmount: async (userId) => {
     try {
-        const database = await connectToDatabase();
-        let total = await database
-            .collection(collection.CART_COLLECTION)
-            .aggregate([
-                {
-                    $match: { user: new ObjectId(userId) },
-                },
-                {
-                    $unwind: "$product",
-                },
-                {
-                    $project: {
-                        item: "$product.item",
-                        quantity: { $toInt: "$product.quantity" }, // Convert string to integer
-                    },
-                },
-                {
-                    $lookup: {
-                        from: collection.PRODUCT_COLLECTION,
-                        localField: "item",
-                        foreignField: "_id",
-                        as: "product",
-                    },
-                },
-                {
-                    $project: {
-                        item: 1,
-                        quantity: 1,
-                        product: { $arrayElemAt: ["$product", 0] },
-                    },
-                },
-                {
-                    $set: {
-                        price: { $toDouble: "$product.price" }, // Convert string to double
-                    },
-                },
-                {
-                    $group: {
-                        _id: null,
-                        total: {
-                            $sum: { $multiply: ["$quantity", "$price"] }, // Multiply numeric fields
-                        },
-                    },
-                },
-            ])
-            .toArray();
-       // console.log(total);
-       if (total.length > 0){
-        return (total[0].total);
-       }else{
+      const database = await connectToDatabase();
+      let total = await database
+        .collection(collection.CART_COLLECTION)
+        .aggregate([
+          {
+            $match: { user: new ObjectId(userId) },
+          },
+          {
+            $unwind: "$product",
+          },
+          {
+            $project: {
+              item: "$product.item",
+              quantity: { $toInt: "$product.quantity" }, // Convert string to integer
+            },
+          },
+          {
+            $lookup: {
+              from: collection.PRODUCT_COLLECTION,
+              localField: "item",
+              foreignField: "_id",
+              as: "product",
+            },
+          },
+          {
+            $project: {
+              item: 1,
+              quantity: 1,
+              product: { $arrayElemAt: ["$product", 0] },
+            },
+          },
+          {
+            $set: {
+              price: { $toDouble: "$product.price" }, // Convert string to double
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: {
+                $sum: { $multiply: ["$quantity", "$price"] }, // Multiply numeric fields
+              },
+            },
+          },
+        ])
+        .toArray();
+      // console.log(total);
+      if (total.length > 0) {
+        return total[0].total;
+      } else {
         return 0;
-       } 
-        
+      }
     } catch (err) {
-        console.error("Error showing the cart:", err);
-        throw err;
+      console.error("Error showing the cart:", err);
+      throw err;
     }
-},
-placeOrder:async (order,products,total)=>{
+  },
+  placeOrder: async (order, products, total) => {
     try {
-        console.log(order,products,total)
-        let status=order['payment-method']==='COD'?'placed':'success'; //checking condition to cod or online payment
-        let orderObj={
-            deliveryDetails:{
-                name:order.name,
-                mobile:order.mobile,
-                address:order.address,
-                pincode:order.pincode,
+      // console.log(order, products, total);
+      let status = order["payment-method"] === "COD" ? "placed" : "success"; //checking condition to cod or online payment
+      let orderObj = {
+        deliveryDetails: {
+          name: order.name,
+          mobile: order.mobile,
+          address: order.address,
+          pincode: order.pincode,
         },
-        userId:new ObjectId(order.userId),
-        paymentMethod:order['payment-method'],
-        products:products,
-        totalAmount:total,
+        userId: new ObjectId(order.userId),
+        paymentMethod: order["payment-method"],
+        products: products,
+        totalAmount: total,
         date: new Date(),
-        status:status
-      }
+        status: status,
+      };
       const database = await db.connectToDatabase();
-      let cart=await database.collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{
-        database.collection(collection.CART_COLLECTION).deleteOne({user:new ObjectId(order.userId)}
-        )
-        return
-        //resolve()
-      })
- 
-     } catch (err) {
-        console.error("Error updating quantity:", err);
-        throw err;
-      } 
-},
-getCartProductList:async (userId)=>{
-    try {
-        return new Promise(async (resolve,reject)=>{
-        const database = await db.connectToDatabase();
-        let cart=await database.collection(collection.CART_COLLECTION).findOne(
-          {user: new ObjectId(userId) });
-          resolve(cart.product)
-         })
-      } catch (err) {
-        console.error("Error updating quantity:", err);
-        throw err;
-      }
-},
-getUserOrders:async  (userId)=> {
-  try{
-    return new Promise(async(resolve,reject)=>{
-    const database = await db.connectToDatabase();
-        let orders=await database.collection(collection.ORDER_COLLECTION).find({userId:new ObjectId(userId)}).toArray();
-        console.log(orders);
-        resolve(orders)
-      })
-  }catch(err){
-     
+      let response = await database
+      .collection(collection.ORDER_COLLECTION)
+      .insertOne(orderObj);
+
+      await database.collection(collection.CART_COLLECTION).deleteOne({ user: new ObjectId(order.userId) });
+
+      return String(response.insertedId);
+    } catch (err) {
       console.error("Error updating quantity:", err);
       throw err;
+    }
+  },
+  getCartProductList: async (userId) => {
+    try {
+      return new Promise(async (resolve, reject) => {
+        const database = await db.connectToDatabase();
+        let cart = await database
+          .collection(collection.CART_COLLECTION)
+          .findOne({ user: new ObjectId(userId) });
+        resolve(cart.product);
+      });
+    } catch (err) { 
+      console.error("Error updating quantity:", err);
+      throw err;
+    }
+  },
+  getUserOrders: async (userId) => {
+    try {
+      return new Promise(async (resolve, reject) => {
+        const database = await db.connectToDatabase();
+        let orders = await database
+          .collection(collection.ORDER_COLLECTION)
+          .find({ userId: new ObjectId(userId) })
+          .toArray();
+        //console.log(orders);
+        resolve(orders);
+      });
+    } catch (err) {
+      console.error("Error updating quantity:", err);
+      throw err;
+    }
+  },
+  getOrderProducts: async (orderId) => {
+    try {
+      return new Promise(async (resolve, reject) => {
+        const database = await connectToDatabase();
+        let orderItems = await database
+          .collection(collection.ORDER_COLLECTION)
+          .aggregate([
+            {
+              $match: { _id: new ObjectId(orderId) },
+            },
+            {
+              $unwind: "$products",
+            },
+            {
+              $project: {
+                item: "$products.item",
+                quantity: "$products.quantity",
+              },
+            },
+            {
+              $lookup: {
+                from: collection.PRODUCT_COLLECTION,
+                localField: "item",
+                foreignField: "_id",
+                as: "products",
+              },
+            },
+            {
+              $project: {
+                item: 1,
+                quantity: 1,
+                product: { $arrayElemAt: ["$products", 0] },
+              },
+            },
+          ])
+          .toArray();
+
+        resolve(orderItems);
+      });
+    } catch (err) {
+      console.error("Error showing the cart:", err);
+      throw err;
+    }
+  },
+  generateRazorpay: (orderId,total) => {
+    try{
+      return new Promise((resolve, reject) => {
+      
+      var options={
+     
+        amount: total,
+        currency: "INR",
+        receipt: orderId
+      };
+      instance.orders.create(options, function(err, order){
+       if(err){
+        console.log(err);
+       }else{
+        console.log("Order",order);
+        resolve(order)
+      }
+      });
+    });
+  }catch (err){
+    console.log(err);
   }
-},
-getOrderProducts:async (orderId)=>{
-try {
-  
-  return new Promise(async(resolve,reject)=>{
-  const database = await connectToDatabase();
-  let orderItems = await database
-    .collection(collection.ORDER_COLLECTION)
-    .aggregate([
-      {
-        $match: {_id: new ObjectId(orderId) },
-      },
-      {
-        $unwind: "$products",
-      },
-      {
-        $project: {
-          item: "$products.item",
-          quantity: "$products.quantity",
-        },
-      },
-      {
-        $lookup: {
-          from: collection.PRODUCT_COLLECTION,
-          localField: "item",
-          foreignField: "_id",
-          as: "products",
-        },
-      },
-      {
-        $project: {
-          item: 1,
-          quantity: 1,
-          product: { $arrayElemAt: ["$products", 0] },
-        },
-      },
-    ])
-    .toArray();
-  
-  resolve(orderItems);
-})
-} catch (err) {
-  console.error("Error showing the cart:", err);
-  throw err;
-}
-}
+  },
 };
- 
