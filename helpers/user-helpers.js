@@ -273,13 +273,13 @@ placeOrder:async (order,products,total)=>{
         paymentMethod:order['payment-method'],
         products:products,
         totalAmount:total,
-        date: new date(),
+        date: new Date(),
         status:status
       }
       const database = await db.connectToDatabase();
       let cart=await database.collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{
-        database.collection(collection.CART_COLLECTION).deleteOne({user:new ObjectId(order.userId)}
-        )
+        // database.collection(collection.CART_COLLECTION).deleteOne({user:new ObjectId(order.userId)}
+        // )
         return
         //resolve()
       })
@@ -287,7 +287,7 @@ placeOrder:async (order,products,total)=>{
      } catch (err) {
         console.error("Error updating quantity:", err);
         throw err;
-      }
+      } 
 },
 getCartProductList:async (userId)=>{
     try {
@@ -301,6 +301,65 @@ getCartProductList:async (userId)=>{
         console.error("Error updating quantity:", err);
         throw err;
       }
+},
+getUserOrders:async  (userId)=> {
+  try{
+    return new Promise(async(resolve,reject)=>{
+    const database = await db.connectToDatabase();
+        let orders=await database.collection(collection.ORDER_COLLECTION).find({userId:new ObjectId(userId)}).toArray();
+        console.log(orders);
+        resolve(orders)
+      })
+  }catch(err){
+     
+      console.error("Error updating quantity:", err);
+      throw err;
+  }
+},
+getOrderProducts:async (orderId)=>{
+try {
+  
+  return new Promise(async(resolve,reject)=>{
+  const database = await connectToDatabase();
+  let orderItems = await database
+    .collection(collection.ORDER_COLLECTION)
+    .aggregate([
+      {
+        $match: {_id: new ObjectId(orderId) },
+      },
+      {
+        $unwind: "$products",
+      },
+      {
+        $project: {
+          item: "$products.item",
+          quantity: "$products.quantity",
+        },
+      },
+      {
+        $lookup: {
+          from: collection.PRODUCT_COLLECTION,
+          localField: "item",
+          foreignField: "_id",
+          as: "products",
+        },
+      },
+      {
+        $project: {
+          item: 1,
+          quantity: 1,
+          product: { $arrayElemAt: ["$products", 0] },
+        },
+      },
+    ])
+    .toArray();
+  
+  resolve(orderItems);
+})
+} catch (err) {
+  console.error("Error showing the cart:", err);
+  throw err;
 }
-
+}
 };
+ 

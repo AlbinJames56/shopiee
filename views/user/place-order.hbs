@@ -47,7 +47,7 @@
           <label class="form-check-label" for="online">
             Online Payment
       </div><br>
-      <button onclick="validateForm()" class="btn btn-success">checkout</button>
+      <button  type="submit" class="btn btn-success">checkout</button>
       
     </div>
   </div>
@@ -55,15 +55,36 @@
 </div>
 </section>
 <script>
-    $("#checkout-form").submut((e)=>{
-        e.preventDefault()
-        $:ajax({
-            url:'/place-order',
-            method:'post',
-            data:$('#checkout-form').serialize(),
-            success:(res) => {
-                alert(res)
+    $("#checkout-form").submit((e) => {
+        e.preventDefault();
+        $("#error-message").empty().hide();
+
+        // Validate form fields
+        const name = $("#name").val();
+        const address = $("#address").val();
+        const pincode = $("#pincode").val();
+        const mobile = $("#mobile").val();
+        
+
+        if (!name || !address || !pincode || !mobile ) {
+            $("#error-message").text("Please fill out all fields").show();
+            return;
+        }
+
+        $.ajax({
+            url: '/place-order',
+            method: 'post',
+            data: $('#checkout-form').serialize(),
+            success: (response) => {
+                //alert(response);
+                if (response.status) {
+                    location.href = '/order-success';
+                }
+            },
+            error: (xhr, status, error) => {
+                const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "An error occurred";
+                $("#error-message").text(errorMessage).show();
             }
-        })
-    })
+        });
+    });
 </script>
