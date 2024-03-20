@@ -274,8 +274,8 @@ module.exports = {
   },
   placeOrder: async (order, products, total) => {
     try {
-      // console.log(order, products, total);
-      let status = order["payment-method"] === "COD" ? "placed" : "success"; //checking condition to cod or online payment
+     console.log(order);
+      let status = order['payment-method'] === 'cod' ? "placed" : "pending"; //checking condition to cod or online payment
       let orderObj = {
         deliveryDetails: {
           name: order.name,
@@ -295,7 +295,7 @@ module.exports = {
       .collection(collection.ORDER_COLLECTION)
       .insertOne(orderObj);
 
-      await database.collection(collection.CART_COLLECTION).deleteOne({ user: new ObjectId(order.userId) });
+      //await database.collection(collection.CART_COLLECTION).deleteOne({ user: new ObjectId(order.userId) });
 
       return String(response.insertedId);
     } catch (err) {
@@ -391,7 +391,7 @@ module.exports = {
        if(err){
         console.log(err);
        }else{
-        console.log("Order",order);
+        //console.log("Order",order);
         resolve(order)
       }
       });

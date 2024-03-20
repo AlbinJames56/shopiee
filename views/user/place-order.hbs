@@ -1,111 +1,148 @@
+<!-- Include Razorpay library script -->
+
+
+<!-- Your HTML code -->
+
 <section>
-  <div class="container pt-5 ">
+  <div class="container pt-5">
     <h2 class="text-center">Enter Delivery Details</h2>
-    <form action="place-order" method="post" id="checkout-form"> 
-    <div class="row p-5">
-    <div class="col-md-7">
-      
-      
-        <label for="name" id="name-label" >Name: </label><br />
-        
-        <input type="text" style="width:  60%;" id="name" name="name"   /><br /> 
-
-        <label for="address" id="address-label">Address : </label><br />
-        <input type="text"style="width:  60%;" name="address" id="address" /><br>
-
-        <label for="pincode" id="pincode-label">Pincode: </label><br />
-        <input type="number" style="width:  60%;" name="pincode" id="pincode" /><br />
-        <label for="mobile" id="mobile-label">Mobile: </label><br />
-        <input type="number" style="width:  60%;" name="mobile" id="mobile" /><br /><br />
-        <input type="text" name="userId" id="" value="{{user._id}}" hidden/>
-        
-
-    </div>
-    <div class="col-md-4 ">
-      <div class="card p-4 ">
-        <h4>Total Amount: Rs.{{total}}</h4>
-        <hr />
-        <h6>Payment method</h6>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="payment-method"
-            value="cod"
-          />
-          <label class="form-check-label" for="cod">
-            COD
-          </label>
+    <form action="place-order" method="post" id="checkout-form">
+      <div class="row p-5">
+        <div class="col-md-7">
+          <label for="name" id="name-label">Name: </label><br />
+          <input type="text" style="width: 60%;" id="name" name="name" /><br />
+          <label for="address" id="address-label">Address : </label><br />
+          <input type="text" style="width: 60%;" name="address" id="address" /><br>
+          <label for="pincode" id="pincode-label">Pincode: </label><br />
+          <input type="number" style="width: 60%;" name="pincode" id="pincode" /><br />
+          <label for="mobile" id="mobile-label">Mobile: </label><br />
+          <input type="number" style="width: 60%;" name="mobile" id="mobile" /><br /><br />
+          <input type="text" name="userId" id="" value="{{user._id}}" hidden />
         </div>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="payment-method"
-            value="online"
-            checked
-          />
-          <label class="form-check-label" for="online">
-            Online Payment
-      </div><br>
-      <button  type="submit" class="btn btn-success">checkout</button>
-      
-    </div>
+        <div class="col-md-4 ">
+          <div class="card p-4 ">
+            <h4>Total Amount: Rs.{{total}}</h4>
+            <hr />
+            <h6>Payment method</h6>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="cod" name="payment-method" value="cod" />
+              <label class="form-check-label" for="cod">COD</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payment-method" id="online" value="online" checked />
+              <label class="form-check-label" for="online">Online Payment</label>
+            </div><br>
+            <button type="submit" class="btn btn-success">checkout</button>
+          </div>
+        </div>
+      </div>
+      <div id="error-message"></div>
+    </form>
   </div>
-  <div id="error-message"></div>
-        </form>
-</div>
 </section>
+
+<!-- Your JavaScript code -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    $("#checkout-form").submit((e) => {
-        e.preventDefault();
-        $("#error-message").empty().hide();
+  $("#checkout-form").submit((e) => {
+    e.preventDefault(); // Prevent form submission
+    $("#error-message").empty().hide();
 
-        // Validate form fields
-        const name = $("#name").val();
-        const address = $("#address").val();
-        const pincode = $("#pincode").val();
-        const mobile = $("#mobile").val();
-        
+    // Validate form fields
+    const name = $("#name").val();
+    const address = $("#address").val();
+    const pincode = $("#pincode").val();
+    const mobile = $("#mobile").val();
 
-        if (!name || !address || !pincode || !mobile ) {
-          const errorMessage = "Please fill out all fields";
-            $("#error-message").text(errorMessage).show().css("color", "red");
+    if (!name || !address || !pincode || !mobile) {
+      const errorMessage = "Please fill out all fields";
+      $("#error-message").text(errorMessage).show().css("color", "red");
 
-           if (!name) {
-                $("#name").css("border", "1px solid red");
-                $("#name-label").css("color", "red");
-            }
-            if (!address) {
-                $("#address").css("border", "1px solid red");
-                $("#address-label").css("color", "red");
-            }
-            if (!pincode) {
-                $("#pincode").css("border", "1px solid red");
-                $("#pincode-label").css("color", "red");
-            }
-            if (!mobile) {
-                $("#mobile").css("border", "1px solid red");
-                $("#mobile-label").css("color", "red");
-            }
-            return;
+      if (!name) {
+        $("#name").css("border", "1px solid red");
+        $("#name-label").css("color", "red");
+      }
+      if (!address) {
+        $("#address").css("border", "1px solid red");
+        $("#address-label").css("color", "red");
+      }
+      if (!pincode) {
+        $("#pincode").css("border", "1px solid red");
+        $("#pincode-label").css("color", "red");
+      }
+      if (!mobile) {
+        $("#mobile").css("border", "1px solid red");
+        $("#mobile-label").css("color", "red");
+      }
+     return;
+    }
+     
+  
+
+
+  $.ajax({
+    url: '/place-order',
+    method: 'post',
+    data: $('#checkout-form').serialize(),
+    success: (response) => {
+       
+      if (response.codSuccess) {
+        location.href = '/order-success';
+      } else {
+        razorpayPayment(response);
+      }
+    },
+    error: (xhr, status, error) => {
+      const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "An error occurred";
+      $("#error-message").text(errorMessage).show();
+    }
+  });
+  
+});
+  function razorpayPayment(order) {
+    try {
+      var options = {
+        "key": "rzp_test_QRxsVv0c0u81qM",
+        "amount": order.amount,
+        "currency": "INR",
+        "name": "Shopiee",
+        "description": "Test Transaction",
+        "image": "https://example.com/your_logo",
+        "order_id": order.id,
+        "callback_url": "https://eneqd3r9zrjok.x.pipedream.net/",
+        "handler": function(response) {
+           
+          verifyPayment(response, order);
+          
+        },
+        "prefill": {
+          "name": "Gaurav Kumar",
+          "email": "gaurav.kumar@example.com",
+          "contact": "9000090000"
+        },
+        "notes": {
+          "address": "Razorpay Corporate Office"
+        },
+        "theme": {
+          "color": "#3399cc"
         }
-        $.ajax({
-            url: '/place-order',
-            method: 'post',
-            data: $('#checkout-form').serialize(),
-            success: (response) => {
-                //alert(response);
-                if (response.status) {
-                    location.href = '/order-success';
-                }else{
-                  
-                }
-            },
-            error: (xhr, status, error) => {
-                const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "An error occurred";
-                $("#error-message").text(errorMessage).show();
-            }
-        });
+      };
+      var rzp1 = new Razorpay(options);
+      rzp1.open();
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  function verifyPayment(payment, order) {
+    $.ajax({
+      url: '/verify-payment',
+      data: {
+        payment,
+        order
+      },
+      method: 'post'
     });
+  }
 </script>
