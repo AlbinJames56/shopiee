@@ -1,0 +1,23 @@
+<div class="container p-5"> 
+  <form action="/login" method="post">
+    <h2 class="col d-flex justify-content-center">Login Page</h2>
+    <!-- Email input -->
+    {{#if loginErr}}
+    <invalid class="error "style="color: red;">{{loginErr}}</p>
+    {{/if}}
+    <div class="form-outline mb-4">
+        <label class="form-label" for="form2Example1">Username</label>
+      <input type="email" id="email" name="email" class="form-control" placeholder="Enter email" />     
+    </div>
+    <!-- Password input -->
+    <div class="form-outline mb-4">
+        <label class="form-label" for="form2Example2">Password</label>
+      <input type="password" id="password" 
+     name="password" class="form-control" placeholder="Enter password"/>     
+    </div>
+    
+    <!-- Submit button -->
+    <button type="submit" class="btn btn-primary btn-block mb-4">Login</button>
+    <!-- Register buttons -->
+   
+  </form>
