@@ -101,6 +101,7 @@
 });
   function razorpayPayment(order) {
     try {
+      console.log("amt ",order.amount);
       var options = {
         "key": "rzp_test_QRxsVv0c0u81qM",
         "amount": order.amount,
@@ -142,7 +143,14 @@
         payment,
         order
       },
-      method: 'post'
+      method: 'post',
+      success:(response)=>{
+        if(response.status){
+          location.href='/order-success'
+        }else{
+          alert("payment failed")
+        }
+      }
     });
   }
 </script>

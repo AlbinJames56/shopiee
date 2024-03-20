@@ -79,7 +79,6 @@ module.exports = {
             }
           );
           //console.log("Product quantity updated in cart");
-          
         } else {
           await database
             .collection(collection.CART_COLLECTION)
@@ -89,7 +88,6 @@ module.exports = {
             );
 
           //console.log("Product added to existing cart");
-        
         }
       } else {
         // Create a new cart for the user
@@ -102,7 +100,6 @@ module.exports = {
           .collection(collection.CART_COLLECTION)
           .insertOne(cartObj);
         // console.log('Cart inserted successfully');
-        
       }
     } catch (error) {
       console.error("Error adding product to cart:", error);
@@ -274,8 +271,8 @@ module.exports = {
   },
   placeOrder: async (order, products, total) => {
     try {
-     console.log(order);
-      let status = order['payment-method'] === 'cod' ? "placed" : "pending"; //checking condition to cod or online payment
+      console.log(order);
+      let status = order["payment-method"] === "cod" ? "placed" : "pending"; //checking condition to cod or online payment
       let orderObj = {
         deliveryDetails: {
           name: order.name,
@@ -292,10 +289,11 @@ module.exports = {
       };
       const database = await db.connectToDatabase();
       let response = await database
-      .collection(collection.ORDER_COLLECTION)
-      .insertOne(orderObj);
-
-      //await database.collection(collection.CART_COLLECTION).deleteOne({ user: new ObjectId(order.userId) });
+        .collection(collection.ORDER_COLLECTION)
+        .insertOne(orderObj);
+      await database
+        .collection(collection.CART_COLLECTION)
+        .deleteOne({ user: new ObjectId(order.userId) });
 
       return String(response.insertedId);
     } catch (err) {
@@ -312,7 +310,7 @@ module.exports = {
           .findOne({ user: new ObjectId(userId) });
         resolve(cart.product);
       });
-    } catch (err) { 
+    } catch (err) {
       console.error("Error updating quantity:", err);
       throw err;
     }
@@ -377,27 +375,63 @@ module.exports = {
       throw err;
     }
   },
-  generateRazorpay: (orderId,total) => {
-    try{
+  generateRazorpay: (orderId, total) => {
+    try {
       return new Promise((resolve, reject) => {
-      
-      var options={
-     
-        amount: total,
-        currency: "INR",
-        receipt: orderId
-      };
-      instance.orders.create(options, function(err, order){
-       if(err){
-        console.log(err);
-       }else{
-        //console.log("Order",order);
-        resolve(order)
-      }
+        var options = {
+          amount: total * 100, //* 100 because razorpay calclute cash in paisa not in rs
+          currency: "INR",
+          receipt: orderId,
+        };
+        instance.orders.create(options, function (err, order) {
+          if (err) {
+            console.log(err);
+          } else {
+            //console.log("Order",order);
+            resolve(order);
+          }
+        });
       });
-    });
-  }catch (err){
-    console.log(err);
-  }
+    } catch (err) {
+      console.log(err);
+    }
   },
+
+  verifyPayment: (details) => {
+    try {
+      return new Promise((resolve, reject) => {
+        var crypto = require("crypto");
+        let hmac = crypto.createHmac("sha256", "oH6W8oBNSpxq0dzUFV80qF78");
+
+        hmac.update(
+          details["payment[razorpay_order_id]"] +
+            "|" +
+            details["payment[razorpay_payment_id]"]
+        );
+        hmac = hmac.digest("hex"); //coverting to string
+        if (hmac == details["payment[razorpay_signature]"]) {
+          resolve();
+        } else {
+          reject();
+        }
+      });
+    } catch (err) {
+      console.error("Error verifing payment", err);
+      throw err;
+    }
+  },
+  changePaymentStatus: (orderId) =>{
+    return new Promise(async (resolve, reject) =>{
+      const database = await db.connectToDatabase();
+      
+      await database
+        .collection(collection.ORDER_COLLECTION)
+         .updateOne(
+          { _id: new ObjectId(orderId) }, // Use "_id" instead of "_Id"
+          { $set: { status: "placed" } }
+                )
+        .then (resolve) 
+    });
+  }
+
 };
